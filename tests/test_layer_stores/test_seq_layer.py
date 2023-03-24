@@ -15,7 +15,7 @@ class TestSeqLayer(unittest.TestCase):
             (255, 0, 255),
         ]:
             self.assertEqual(s.get_color(color, 0, 1, 1), color)
-
+ 
     @number("3.2")
     def test_layers(self):
         s = SequenceLayerStore()
@@ -69,3 +69,4 @@ class TestSeqLayer(unittest.TestCase):
         self.assertEqual(s.get_color((100, 100, 100), 7, 0, 0), (0, 0, 0))
         s.erase(black)
         self.assertEqual(s.get_color((100, 100, 100), 7, 0, 0), (91, 214, 104))
+ 

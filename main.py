@@ -4,6 +4,10 @@ import math
 from grid import Grid
 from layer_util import get_layers, Layer
 from layers import lighten
+from action import PaintAction, PaintStep
+from undo import UndoTracker
+from replay import ReplayTracker
+
 
 class MyWindow(arcade.Window):
     """ Painter Window """
@@ -287,11 +291,16 @@ class MyWindow(arcade.Window):
 
     def on_init(self):
         """Initialisation that occurs after the system initialisation."""
-        pass
+
+        self.my_undo_tracker = UndoTracker()
+        self.my_replay_tracker = ReplayTracker()
+    
 
     def on_reset(self):
         """Called when a window reset is requested."""
-        pass
+        self.my_undo_tracker.clear_undo()
+        self.my_replay_tracker.clear_replay()
+        
 
     def on_paint(self, layer: Layer, px, py):
         """
@@ -302,30 +311,73 @@ class MyWindow(arcade.Window):
         px: x position of the brush.
         py: y position of the brush.
         """
-        pass
+
+        temp_action = PaintAction([],False)
+
+
+        for row_paint in range (px - self.grid.brush_size , px + self.grid.brush_size + 1):
+            if row_paint < 0 or row_paint > self.grid.num_of_rows -1 :
+                continue
+           
+            for col_paint in range (py - self.grid.brush_size , py + self.grid.brush_size + 1):
+                if col_paint < 0 or col_paint > self.grid.num_of_cols - 1 :
+                    continue
+                
+                #calculating Manhattan distance between (row_paint , col_paint) and (px , py)
+                man_dist = abs(row_paint - px) + abs(col_paint - py)
+                
+                #print("row paint and col paint is " , row_paint, col_paint, " man dist is ", man_dist )
+                if man_dist > self.grid.brush_size:
+                    continue
+                
+                temp_add = self.grid[row_paint][col_paint].add(layer)
+
+                temp_step = PaintStep((row_paint, col_paint),layer)
+                #temp_step.redo_apply(self.grid)
+
+                temp_action.add_step(temp_step)
+
+        self.my_undo_tracker.add_action(temp_action)
+       
+        self.my_replay_tracker.add_action(temp_action)
+
+
+        
 
     def on_undo(self):
         """Called when an undo is requested."""
-        pass
+        self.my_undo_tracker.undo(self.grid)
+        
 
     def on_redo(self):
         """Called when a redo is requested."""
-        pass
+        self.my_undo_tracker.redo(self.grid)
+        
 
     def on_special(self):
         """Called when the special action is requested."""
-        pass
+        self.grid.special()
+        self.my_undo_tracker.add_action(PaintAction([], True))
+        self.my_replay_tracker.add_action(PaintAction([], True))
+
 
     def on_replay_start(self):
         """Called when the replay starting is requested."""
-        pass
+
+        self.my_replay_tracker.start_replay()
+
+        print("on replay start is called")
+    
 
     def on_replay_next_step(self) -> bool:
         """
         Called when the next step of the replay is requested.
         Returns whether the replay is finished.
         """
-        return True
+        print("on replay next step is called")
+        return self.my_replay_tracker.play_next_action(self.grid)
+        
+
 
     def on_increase_brush_size(self):
         """Called when an increase to the brush size is requested."""
@@ -334,6 +386,8 @@ class MyWindow(arcade.Window):
     def on_decrease_brush_size(self):
         """Called when a decrease to the brush size is requested."""
         self.grid.decrease_brush_size()
+
+
 
 def main():
     """ Main function """
