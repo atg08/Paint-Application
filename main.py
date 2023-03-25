@@ -332,33 +332,42 @@ class MyWindow(arcade.Window):
                 
                 temp_add = self.grid[row_paint][col_paint].add(layer)
 
-                temp_step = PaintStep((row_paint, col_paint),layer)
-                #temp_step.redo_apply(self.grid)
+              
+                if temp_add == True:
+                    temp_step = PaintStep((row_paint, col_paint),layer)
+                    temp_action.add_step(temp_step)
 
-                temp_action.add_step(temp_step)
+        temp_len = len(temp_action.steps)
 
-        self.my_undo_tracker.add_action(temp_action)
+        if temp_len != 0:
+            self.my_undo_tracker.add_action(temp_action)
        
-        self.my_replay_tracker.add_action(temp_action)
+            self.my_replay_tracker.add_action(temp_action , False)
 
 
         
 
     def on_undo(self):
         """Called when an undo is requested."""
-        self.my_undo_tracker.undo(self.grid)
-        
+        temp_action = self.my_undo_tracker.undo(self.grid)
+
+        if temp_action != None:
+            self.my_replay_tracker.add_action(temp_action , True)
+
 
     def on_redo(self):
         """Called when a redo is requested."""
-        self.my_undo_tracker.redo(self.grid)
+        temp_action = self.my_undo_tracker.redo(self.grid)
+
+        if temp_action != None:
+            self.my_replay_tracker.add_action(temp_action , False)
         
 
     def on_special(self):
         """Called when the special action is requested."""
         self.grid.special()
         self.my_undo_tracker.add_action(PaintAction([], True))
-        self.my_replay_tracker.add_action(PaintAction([], True))
+        self.my_replay_tracker.add_action(PaintAction([], True) , False)
 
 
     def on_replay_start(self):
@@ -366,7 +375,7 @@ class MyWindow(arcade.Window):
 
         self.my_replay_tracker.start_replay()
 
-        print("on replay start is called")
+        #print("on replay start is called")
     
 
     def on_replay_next_step(self) -> bool:
@@ -374,7 +383,9 @@ class MyWindow(arcade.Window):
         Called when the next step of the replay is requested.
         Returns whether the replay is finished.
         """
-        print("on replay next step is called")
+        #print("on replay next step is called")
+        
+        
         return self.my_replay_tracker.play_next_action(self.grid)
         
 

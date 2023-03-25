@@ -25,6 +25,7 @@ class UndoTracker:
         """
         if not self.my_undo_stack.is_full():
             self.my_undo_stack.push(action)
+            self.my_redo_stack.clear()
 
 
 
@@ -35,6 +36,8 @@ class UndoTracker:
 
         :return: The action that was undone, or None.
         """
+
+
         if self.my_undo_stack.is_empty():
             return None
 

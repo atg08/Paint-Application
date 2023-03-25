@@ -143,13 +143,14 @@ class AdditiveLayerStore(LayerStore):
     - special: Reverse the order of current layers (first becomes last, etc.)
     """
 
-    MAX_CAPACITY = 2000
+   
 
     def __init__(self) -> None:
         #self.my_layer_stack = ArrayStack(self.MAX_CAPACITY)
 
         #initialising the queue to max capacity
-        self.my_layer_queue = CircularQueue (self.MAX_CAPACITY)
+        temp_len = 100 * (len(get_layers()))
+        self.my_layer_queue = CircularQueue (temp_len)
         
 
  
@@ -187,30 +188,6 @@ class AdditiveLayerStore(LayerStore):
 
         return temp_colour
 
-        
-        """  if len(self.my_layer_stack) == 1:
-            return (self.my_layer_stack.peek()).apply(start, timestamp, x, y)
-        
-        temp_layer = self.my_layer_stack.peek()
-
-        if temp_layer.name != invert.name and temp_layer.name != lighten.name and temp_layer.name != darken.name:
-            return temp_layer.apply(start, timestamp, x, y)
-
-        temp_layer_stack = ArrayStack(len(self.my_layer_stack) + 1)
-
-        while (self.my_layer_stack.peek()).name == lighten.name or (self.my_layer_stack.peek()).name == invert.name or (self.my_layer_stack.peek()).name == darken.name :
-            temp_layer_stack.push(self.my_layer_stack.pop())
-
-        temp_colour = (self.my_layer_stack.peek()).apply(start, timestamp, x, y)
-
-        while not temp_layer_stack.is_empty():
-            self.my_layer_stack.push(temp_layer_stack.pop())
-            temp_colour = (self.my_layer_stack.peek()).apply(temp_colour, timestamp, x, y)
-            
-
-        return temp_colour """
-
-
  
     def erase(self, layer: Layer) -> bool:
         """
@@ -225,17 +202,6 @@ class AdditiveLayerStore(LayerStore):
         
         return True
 
-        """ temp_layer_queue = ArrayStack(len(self.my_layer_stack) + 1)
-
-        while not self.my_layer_stack.is_empty():
-            temp_layer_stack.push(self.my_layer_stack.pop())
-
-        temp_layer_stack.pop() #removing the first layer of the temp stack i.e. the oldest
-        
-        while not temp_layer_stack.is_empty():
-            self.my_layer_stack.push(temp_layer_stack.pop())
-        
-        return True """
    
 
     def special(self):
@@ -252,14 +218,6 @@ class AdditiveLayerStore(LayerStore):
             self.my_layer_queue.append(temp_layer_stack.pop())
 
 
-        """ temp_layer_queue = CircularQueue(len(self.my_layer_stack) + 1)
-
-        while not self.my_layer_stack.is_empty():
-            temp_layer_queue.append(self.my_layer_stack.pop())
-
-        while not temp_layer_queue.is_empty():
-            self.my_layer_stack.push(temp_layer_queue.serve())
- """
 
 
 class SequenceLayerStore(LayerStore):

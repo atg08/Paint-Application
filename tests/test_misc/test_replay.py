@@ -31,7 +31,7 @@ class TestReplay(unittest.TestCase):
 
         self.assertGridEqual(grid, control_grid)
 
-    """  @number("5.2")
+    @number("5.2")
     def test_advanced(self):
         grid = Grid(Grid.DRAW_STYLE_SEQUENCE, 10, 10)
         control_grid = Grid(Grid.DRAW_STYLE_SEQUENCE, 10, 10)
@@ -100,7 +100,7 @@ class TestReplay(unittest.TestCase):
         for step in steps:
             step.redo_apply(control_grid)
         self.assertGridEqual(grid, control_grid)
-        self.assertEqual(replay.play_next_action(grid), True) # Finished."""
+        self.assertEqual(replay.play_next_action(grid), True) # Finished.
 
     def assertGridEqual(self, grid1: Grid, grid2: Grid):
         for x in range(len(grid1.store_array)):

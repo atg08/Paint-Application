@@ -34,7 +34,7 @@ class ReplayTracker:
         Special, Redo, and Draw all have this is False.
         """
         if self.my_start_replay == False:
-            self.my_replay_queue.append(action)
+            self.my_replay_queue.append((action , is_undo))
 
         
 
@@ -50,11 +50,17 @@ class ReplayTracker:
             self.my_start_replay = False
             return True
 
+        temp_tuple = self.my_replay_queue.serve()
+        temp_paint_action = temp_tuple [0]
+        temp_flag = temp_tuple [1]
 
-        temp_paint_action = self.my_replay_queue.serve()
-        temp_paint_action.redo_apply(grid)
+        if temp_flag == False:
+            temp_paint_action.redo_apply(grid)
 
-        print("seize of queue in replay next action " , len(self.my_replay_queue))
+        else:
+            temp_paint_action.undo_apply(grid)
+
+        #print("size of queue in replay next action " , len(self.my_replay_queue))
         return False
         
 
