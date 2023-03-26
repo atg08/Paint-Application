@@ -23,7 +23,7 @@ class TestAddLayer(unittest.TestCase):
         self.assertEqual(s.get_color((20, 20, 20), 40, 0, 0), (0, 0, 0))
         # This should light the black, not the background.
         s.add(lighten)
-        self.assertEqual(s.get_color((100, 100, 100), 0, 20, 40), (40, 40, 40)) 
+        self.assertEqual(s.get_color((100, 100, 100), 0, 20, 40), (40, 40, 40))
 
     @number("2.3")
     def test_erase(self):
@@ -62,4 +62,4 @@ class TestAddLayer(unittest.TestCase):
         s.erase(black)
         s.add(invert)
         self.assertEqual(s.get_color((100, 100, 100), 7, 0, 0), (255-91, 255-214, 255-104))
- 
+  

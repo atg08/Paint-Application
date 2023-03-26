@@ -19,8 +19,6 @@ class Grid:
     MAX_BRUSH = 5
     MIN_BRUSH = 0
 
-    
-
 
     def __init__(self, draw_style, x, y) -> None:
         """

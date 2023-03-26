@@ -375,27 +375,24 @@ class MyWindow(arcade.Window):
 
         self.my_replay_tracker.start_replay()
 
-        #print("on replay start is called")
-    
 
     def on_replay_next_step(self) -> bool:
         """
         Called when the next step of the replay is requested.
         Returns whether the replay is finished.
         """
-        #print("on replay next step is called")
-        
-        
         return self.my_replay_tracker.play_next_action(self.grid)
         
 
 
     def on_increase_brush_size(self):
         """Called when an increase to the brush size is requested."""
+
         self.grid.increase_brush_size()
 
     def on_decrease_brush_size(self):
         """Called when a decrease to the brush size is requested."""
+        
         self.grid.decrease_brush_size()
 
 

@@ -37,7 +37,6 @@ class UndoTracker:
         :return: The action that was undone, or None.
         """
 
-
         if self.my_undo_stack.is_empty():
             return None
 
@@ -51,7 +50,6 @@ class UndoTracker:
             return temp_action
 
         return None
-
 
 
     def redo(self, grid: Grid) -> PaintAction|None:

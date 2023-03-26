@@ -70,46 +70,39 @@ class SetLayerStore(LayerStore):
 
         if self.my_layer != layer:
             self.my_layer = layer
-            
             return True
 
         #else returns false as it is the same layer and we dont need to reassign
         return False
-
-
-
 
     
     def get_color(self, start, timestamp, x, y) -> tuple[int, int, int]:
         """
         Returns the colour this square should show, given the current layers.
         """
-
-        if self.my_layer == None:
-            return start
+        temp_original_colour = start
 
         # using apply function to get colour
-        original_colour = self.my_layer.apply(start, timestamp, x, y)
-
+        if self.my_layer != None:
+            temp_original_colour = self.my_layer.apply(start, timestamp, x, y)
+    
         #print("original colour is " , original_colour , " X and Y are ", x, y)
         
-
         #condition when special fuction is true i.e. selected to invert colours 
 
         if self.is_special == True:
-            inverted_colour=[]  
-            for i in range(0,len(original_colour)):
-                inverted_colour.append(255 - original_colour[i])
-            inverted_colour = tuple(inverted_colour)
+            temp_inverted_colour=[]  
+            for i in range(0,len(temp_original_colour)):
+                temp_inverted_colour.append(255 - temp_original_colour[i])
+            temp_inverted_colour = tuple(temp_inverted_colour)
 
             #print("inverted colour is " , inverted_colour)
-            return inverted_colour
+            return temp_inverted_colour
 
         else:
-            return original_colour
+            return temp_original_colour
 
 
-    
     def erase(self, layer: Layer) -> bool:
         """
         Complete the erase action with this layer
@@ -123,7 +116,6 @@ class SetLayerStore(LayerStore):
         return False
 
 
-    
     def special(self):
         """
         Special mode. Different for each store implementation.
@@ -134,7 +126,6 @@ class SetLayerStore(LayerStore):
 
 
         
-
 class AdditiveLayerStore(LayerStore):
     """
     Additive layer store. Each added layer applies after all previous ones.
@@ -143,16 +134,13 @@ class AdditiveLayerStore(LayerStore):
     - special: Reverse the order of current layers (first becomes last, etc.)
     """
 
-   
-
     def __init__(self) -> None:
-        #self.my_layer_stack = ArrayStack(self.MAX_CAPACITY)
 
-        #initialising the queue to max capacity
         temp_len = 100 * (len(get_layers()))
-        self.my_layer_queue = CircularQueue (temp_len)
-        
 
+        self.my_layer_list = ArraySortedList(temp_len)
+        self.counter = 0
+        
  
     def add(self, layer: Layer) -> bool:
         """
@@ -160,12 +148,11 @@ class AdditiveLayerStore(LayerStore):
         Returns true if the LayerStore was actually changed.
         """
 
-        if self.my_layer_queue.is_full():
-            return False
+        temp_listitem = ListItem(layer , self.counter)
+        self.my_layer_list.add(temp_listitem)
+        self.counter = self.counter + 1
 
-        self.my_layer_queue.append(layer)
         return True
-        
 
 
     def get_color(self, start, timestamp, x, y) -> tuple[int, int, int]:
@@ -174,18 +161,11 @@ class AdditiveLayerStore(LayerStore):
         """
         temp_colour = start
 
-        if not self.my_layer_queue.is_empty():
-
-            temp_layer_queue = CircularQueue(len(self.my_layer_queue) + 1)
-
-            while not self.my_layer_queue.is_empty():
-                temp_layer = self.my_layer_queue.serve() 
+        if not self.my_layer_list.is_empty():
+            for list_index in range (len(self.my_layer_list)):
+                temp_layer = self.my_layer_list[list_index].value
                 temp_colour = temp_layer.apply(temp_colour, timestamp, x, y)
-                temp_layer_queue.append(temp_layer)
-
-            while not temp_layer_queue.is_empty():
-                self.my_layer_queue.append(temp_layer_queue.serve())
-
+        
         return temp_colour
 
  
@@ -195,28 +175,25 @@ class AdditiveLayerStore(LayerStore):
         Returns true if the LayerStore was actually changed.
         """
 
-        if self.my_layer_queue.is_empty():
+        if self.my_layer_list.is_empty():
             return False
 
-        self.my_layer_queue.serve()
-        
+        self.my_layer_list.delete_at_index(0)
         return True
 
    
-
     def special(self):
         """
         Special mode. Different for each store implementation.
         """
 
-        temp_layer_stack = ArrayStack(len(self.my_layer_queue) + 1)
+        if self.my_layer_list.is_empty():
+            return
 
-        while not self.my_layer_queue.is_empty():
-            temp_layer_stack.push(self.my_layer_queue.serve())
-
-        while not temp_layer_stack.is_empty():
-            self.my_layer_queue.append(temp_layer_stack.pop())
-
+        for list_index in range (len(self.my_layer_list) // 2):
+            temp_listitem_layer = self.my_layer_list[list_index].value
+            self.my_layer_list[list_index].value = self.my_layer_list[len(self.my_layer_list) - 1 - list_index].value
+            self.my_layer_list[len(self.my_layer_list) - 1 - list_index].value = temp_listitem_layer
 
 
 
@@ -233,8 +210,6 @@ class SequenceLayerStore(LayerStore):
     def __init__(self) -> None:
 
         temp_length = len(get_layers())
-        #print("len is " , temp_length)
-
         self.my_layer_list = ArraySortedList(temp_length)
 
         temp_apply_status = False
@@ -254,28 +229,15 @@ class SequenceLayerStore(LayerStore):
         if len(self.my_layer_list) == 0:
             return False
 
-        #for i in range(len(self.my_layer_list)):
-                       # print("before adding apply status at " , i , self.my_layer_list[i] , LAYERS[i].name)
-
         for layer_index in range(len(LAYERS)):
             if LAYERS[layer_index] != None:
                 if layer.name == LAYERS[layer_index].name:
                     temp_listitem = self.my_layer_list[layer_index]
+
                     if temp_listitem.value == True:
-                        #print("already added for layer " , layer.name)
-
-                        #for i in range(len(self.my_layer_list)):
-
-                         #   print("after adding apply status at " , i , self.my_layer_list[i] , LAYERS[i].name)
-
                         return False
 
                     self.my_layer_list[layer_index].value = True
-                    #print("made true for layer " , layer.name)
-
-                    #for i in range(len(self.my_layer_list)):
-                     #   print("after adding apply status at " , i , self.my_layer_list[i] , LAYERS[i].name)
-
                     return True
 
 
@@ -291,6 +253,7 @@ class SequenceLayerStore(LayerStore):
             for layer_index in range (len(LAYERS)):
                 if LAYERS[layer_index] != None:
                     temp_listitem = self.my_layer_list[layer_index]
+
                     if temp_listitem.value == True:
                         temp_colour = LAYERS[layer_index].apply(temp_colour, timestamp, x, y)
 
@@ -307,27 +270,15 @@ class SequenceLayerStore(LayerStore):
         if len(self.my_layer_list) == 0:
             return False
 
-        #for i in range(len(self.my_layer_list)):
-                       # print("before adding apply status at " , i , self.my_layer_list[i] , LAYERS[i].name)
-
         for layer_index in range(len(LAYERS)):
             if LAYERS[layer_index] != None:
                 if layer.name == LAYERS[layer_index].name:
                     temp_listitem = self.my_layer_list[layer_index]
+
                     if temp_listitem.value == False:
-                        #print("already erased for layer " , layer.name)
-
-                        #for i in range(len(self.my_layer_list)):
-                            #print("after erasing apply status at " , i , self.my_layer_list[i] , LAYERS[i].name)
-
                         return False
 
                     self.my_layer_list[layer_index].value = False
-                    #print("made false for layer " , layer.name)
-
-                    #for i in range(len(self.my_layer_list)):
-                        #print("after erasing apply status at " , i , self.my_layer_list[i] , LAYERS[i].name)
-
                     return True
 
         
@@ -336,24 +287,17 @@ class SequenceLayerStore(LayerStore):
         """
         Special mode. Different for each store implementation.
         """
-        #print("entering special")
-
-        #for i in range(len(self.my_layer_list)):
-            #print("special apply status at " , i , self.my_layer_list[i] , LAYERS[i].name)
-
-
+       
         if len(self.my_layer_list) > 0:
             temp_sorted_list = ArraySortedList(len(LAYERS))
             for layer_index in range(len(LAYERS)):
                 if LAYERS[layer_index] != None:
                     temp_listitem = self.my_layer_list[layer_index]
+
                     if temp_listitem.value == True:
                         temp_listitem_name = ListItem(False, LAYERS[layer_index].name)
                         temp_sorted_list.add(temp_listitem_name)
 
-            
-            #for i in range(len(temp_sorted_list)):
-                #print("list with inserted layers " , i , temp_sorted_list[i])
 
             index_to_delete = 0
             if len(temp_sorted_list) == 0:
@@ -365,21 +309,9 @@ class SequenceLayerStore(LayerStore):
             else:
                 index_to_delete = (len(temp_sorted_list) // 2) - 1
 
-            #print("index to delete " , index_to_delete)
-
             name_to_delete = temp_sorted_list[index_to_delete].key
-
-            #print("name to delete " , name_to_delete)
-
 
             for layer_index in range(len(LAYERS)):
                 if LAYERS[layer_index] != None:
                     if name_to_delete == LAYERS[layer_index].name:
                         self.my_layer_list[layer_index].value = False
-
-            #print("leaving special")
-
-            
-            #for i in range(len(self.my_layer_list)):
-                # print("special apply status at " , i , self.my_layer_list[i] , LAYERS[i].name)
-    
