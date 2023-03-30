@@ -39,7 +39,7 @@ class MyWindow(arcade.Window):
         self.z_timer = 0
         self.y_timer = 0
         self.enable_ui = True
-        self.replay_timer = 0
+        self.replay_timer = 0   #O(1)
         self.on_init()
 
     def reset(self) -> None:
@@ -290,44 +290,91 @@ class MyWindow(arcade.Window):
     # STUDENT PART
 
     def on_init(self):
-        """Initialisation that occurs after the system initialisation."""
+
+        """
+        Initialisation that occurs after the system initialisation
+        - initialising undo tracker and replay tracker
+
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(other_function) 
+        - Best case: O(other_function)
+        """
 
         self.my_undo_tracker = UndoTracker()
         self.my_replay_tracker = ReplayTracker()
     
 
     def on_reset(self):
-        """Called when a window reset is requested."""
+
+        """
+        Called when a window reset is requested
+        - resets/clears the undo tracker and replay tracker
+
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(other_function) 
+        - Best case: O(other_function)
+        """
+
         self.my_undo_tracker.clear_undo()
         self.my_replay_tracker.clear_replay()
         
 
-    def on_paint(self, layer: Layer, px, py):
+    def on_paint(self, layer: Layer, px : int, py : int):
         """
         Called when a grid square is clicked on, which should trigger painting in the vicinity.
-        Vicinity squares outside of the range [0, GRID_SIZE_X) or [0, GRID_SIZE_Y) can be safely ignored.
+        Vicinity squares outside of the range [0, GRID_SIZE_X) or [0, GRID_SIZE_Y) can be safely ignored
+        - Vicinity is defined by the Manhattan distance of the grid square at (px, py) at a max distance d, where d is the current brush size
 
-        layer: The layer being applied.
-        px: x position of the brush.
-        py: y position of the brush.
+        Args:
+        - self
+        - layer: The layer being applied from Layer class
+        - px: x position of the brush.
+        - py: y position of the brush.
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O((other_function + (brush_size . comp) . (brush_size . comp)) + comp + other_function + (comp . other_function)) + comp . other_function)     
+        - Best case: O((other_function + (brush_size . comp) . (brush_size . comp)) + comp + other_function + (comp . other_function)) + comp . other_function)
         """
 
-        temp_action = PaintAction([],False)
+        temp_action = PaintAction([],False) 
 
 
-        for row_paint in range (px - self.grid.brush_size , px + self.grid.brush_size + 1):
+        for row_paint in range (px - self.grid.brush_size , px + self.grid.brush_size + 1): 
             if row_paint < 0 or row_paint > self.grid.num_of_rows -1 :
                 continue
            
-            for col_paint in range (py - self.grid.brush_size , py + self.grid.brush_size + 1):
+            for col_paint in range (py - self.grid.brush_size , py + self.grid.brush_size + 1): 
                 if col_paint < 0 or col_paint > self.grid.num_of_cols - 1 :
                     continue
                 
                 #calculating Manhattan distance between (row_paint , col_paint) and (px , py)
                 man_dist = abs(row_paint - px) + abs(col_paint - py)
-                
-                #print("row paint and col paint is " , row_paint, col_paint, " man dist is ", man_dist )
-                if man_dist > self.grid.brush_size:
+                 
+                if man_dist > self.grid.brush_size:     
                     continue
                 
                 temp_add = self.grid[row_paint][col_paint].add(layer)
@@ -346,9 +393,26 @@ class MyWindow(arcade.Window):
 
 
         
-
     def on_undo(self):
-        """Called when an undo is requested."""
+
+        """
+        Called when an undo is requested
+        - If UndoTracker returns a valid action, it is added to the ReplayTracker, with the undo flag - true
+
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(other_function + (comp . other_function)) 
+        - Best case: O(other_function + (comp . other_function))
+        """
+
         temp_action = self.my_undo_tracker.undo(self.grid)
 
         if temp_action != None:
@@ -356,7 +420,25 @@ class MyWindow(arcade.Window):
 
 
     def on_redo(self):
-        """Called when a redo is requested."""
+
+        """
+        Called when a redo is requested
+        - If UndoTracker returns a valid action, it is added to the ReplayTracker
+        
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(other_function + (comp . other_function)) 
+        - Best case: O(other_function + (comp . other_function))
+        
+        """
         temp_action = self.my_undo_tracker.redo(self.grid)
 
         if temp_action != None:
@@ -364,34 +446,114 @@ class MyWindow(arcade.Window):
         
 
     def on_special(self):
-        """Called when the special action is requested."""
+
+        """
+        Called when the special action is requested
+
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(other_function) 
+        - Best case: O(other_function)
+        """
+
         self.grid.special()
         self.my_undo_tracker.add_action(PaintAction([], True))
         self.my_replay_tracker.add_action(PaintAction([], True) , False)
 
 
     def on_replay_start(self):
-        """Called when the replay starting is requested."""
+
+        """
+        Called when the replay starting is requested
+
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(1) 
+        - Best case: O(1)
+        """
 
         self.my_replay_tracker.start_replay()
 
 
     def on_replay_next_step(self) -> bool:
+
         """
         Called when the next step of the replay is requested.
-        Returns whether the replay is finished.
+        Returns whether the replay is finished or not
+
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(other_function + (comp . other_function)) - from replay.py
+        - Best case: O(other_function + (comp . other_function))
         """
+
         return self.my_replay_tracker.play_next_action(self.grid)
         
 
-
     def on_increase_brush_size(self):
-        """Called when an increase to the brush size is requested."""
+
+        """
+        Called when an increase to the brush size is requested
+
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(comp) - from grid.py
+        - Best case: O(comp)
+        """
 
         self.grid.increase_brush_size()
 
+
     def on_decrease_brush_size(self):
-        """Called when a decrease to the brush size is requested."""
+
+        """
+        Called when a decrease to the brush size is requested
+        
+        Args:
+        - self
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+
+        Complexity:
+        - Worst case: O(comp) - from grid.py
+        - Best case: O(comp)
+        """
         
         self.grid.decrease_brush_size()
 
