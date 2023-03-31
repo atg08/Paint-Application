@@ -103,7 +103,7 @@ class TestReplay(unittest.TestCase):
         self.assertEqual(replay.play_next_action(grid), True) # Finished.
 
     def assertGridEqual(self, grid1: Grid, grid2: Grid):
-        for x in range(len(grid1.grid)):
+        for x in range(len(grid1.store_array)):
             for y in range(len(grid1[x])):
                 sq1 = grid1[x][y]
                 sq2 = grid2[x][y]
@@ -113,3 +113,4 @@ class TestReplay(unittest.TestCase):
                     "Grid not the same after apply has been made."
                 )
 
+ 

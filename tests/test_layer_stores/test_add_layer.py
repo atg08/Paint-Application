@@ -15,7 +15,7 @@ class TestAddLayer(unittest.TestCase):
             (255, 0, 255),
         ]:
             self.assertEqual(s.get_color(color, 0, 1, 1), color)
-
+ 
     @number("2.2")
     def test_layers(self):
         s = AdditiveLayerStore()
@@ -62,3 +62,4 @@ class TestAddLayer(unittest.TestCase):
         s.erase(black)
         s.add(invert)
         self.assertEqual(s.get_color((100, 100, 100), 7, 0, 0), (255-91, 255-214, 255-104))
+  
