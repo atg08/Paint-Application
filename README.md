@@ -1,4 +1,4 @@
-# Fundamentals of Algorithms - Assignment 1 S1 2023
+# Fundamentals of Algorithms
 Using fundamental algorithms and data structures to make a paint apllication
 
 ## Attribution
